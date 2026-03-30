@@ -6,7 +6,7 @@ The user thinks of ANY number between **1–100**, the system shows 7 magic card
 ---
 
 ## 🚀 Live Demo  
-🔗 **https://YOUR_USERNAME.github.io/YOUR_REPO/**  
+🔗 **https://userdeveloper100.github.io/Magic-Number-game/**  
 (Replace with your GitHub Pages URL)
 
 ---
