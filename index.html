@@ -1,142 +1,211 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Magic Number Game</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Magic Number Game</title>
 
-<style>
-body {
-    background: #f8f9fa;
-    padding: 20px;
-}
-.card-box {
-    perspective: 1000px;
-}
-.card-inner {
-    position: relative;
-    width: 100%;
-    transition: transform 0.6s;
-    transform-style: preserve-3d;
-}
-.card-box.flipped .card-inner {
-    transform: rotateY(180deg);
-}
-.card-face {
-    position: absolute;
-    width: 100%;
-    backface-visibility: hidden;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-    border-radius: 10px;
-    padding: 20px;
-}
-.front {
-    background: white;
-}
-.back {
-    background: #0d6efd;
-    color: white;
-    transform: rotateY(180deg);
-}
-</style>
+  <style>
+    body {
+      background-color: #000;
+      color: #00bfff;
+      font-family: "Segoe UI", sans-serif;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+
+    .container {
+      margin-top: 40px;
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 32px;
+      margin-bottom: 10px;
+      text-shadow: 0 0 10px #00bfff;
+    }
+
+    .welcome-box {
+      margin-top: 40px;
+      font-size: 20px;
+      color: #9be3ff;
+    }
+
+    .btn {
+      background: #00bfff;
+      border: none;
+      padding: 12px 28px;
+      font-size: 18px;
+      margin-top: 20px;
+      color: black;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.3s;
+      box-shadow: 0 0 10px #00bfff;
+    }
+
+    .btn:hover {
+      background: #0099cc;
+      box-shadow: 0 0 18px #00bfff;
+    }
+
+    /* Card Styling */
+    .card-box {
+      width: 90%;
+      max-width: 380px;
+      margin: 20px auto;
+      padding: 20px;
+      border-radius: 14px;
+      background: #0d0d0d;
+      border: 1px solid #00bfff;
+      box-shadow: 0 0 15px #00bfff66;
+      min-height: 150px;
+      max-height: 175px;
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.6s ease;
+    }
+
+    .card-box.show {
+      opacity: 1;
+      transform: translateY(0px);
+    }
+
+    .numbers {
+      color: #9be3ff;
+      font-size: 18px;
+      margin-top: 10px;
+      line-height: 1.4;
+    }
+
+    /* Progress */
+    .progress {
+      margin-top: 20px;
+      font-size: 18px;
+      color: #77d9ff;
+      text-shadow: 0 0 10px #00bfff;
+    }
+
+    /* Result */
+    #resultBox {
+      font-size: 28px;
+      margin-top: 30px;
+      color: #00eaff;
+      text-shadow: 0 0 15px #00d5ff;
+      display: none;
+    }
+  </style>
 </head>
 
 <body>
 
-<!-- 🔊 SOUND FILES -->
-<audio id="flipSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_30c25597e0.mp3?filename=click-124467.mp3"></audio>
-<audio id="clickSound" src="https://cdn.pixabay.com/download/audio/2022/03/10/audio_5f253a6548.mp3?filename=button-press-110151.mp3"></audio>
-<audio id="resultSound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_1824f7ea61.mp3?filename=success-1-6297.mp3"></audio>
+  <div class="container">
 
-<div class="container text-center">
-    <h2 class="mb-4">🔮 Magic Number Game</h2>
-    <p class="lead">Think of a number between <b>1 to 100</b>.  
-    Select <b>Yes</b> if your number appears on the card.</p>
+    <!-- Welcome Screen -->
+    <div id="welcomeScreen">
+      <h1>🪄 Magic Number Game</h1>
+      <p class="welcome-box">
+        Think of a number between <b>1 to 100</b>.<br>
+        I will show you 6 cards… <br>
+        If your number appears on the card, click <b>YES</b>.
+      </p>
+      <button class="btn" onclick="startGame()">Start Game</button>
+    </div>
 
-    <div class="row" id="cards"></div>
+    <!-- Game Screen -->
+    <div id="gameBox" style="display:none;">
+      <h1>Magic Number Game</h1>
 
-    <h3 class="mt-4" id="result" style="display:none;"></h3>
-</div>
+      <div id="progress" class="progress"></div>
 
-<script>
-// Card sets with hidden binary values
-const cardsData = [
-    { value: 1, numbers: generateNumbers(1) },
-    { value: 2, numbers: generateNumbers(2) },
-    { value: 4, numbers: generateNumbers(4) },
-    { value: 8, numbers: generateNumbers(8) },
-    { value: 16, numbers: generateNumbers(16) },
-    { value: 32, numbers: generateNumbers(32) },
-    { value: 64, numbers: generateNumbers(64) }
-];
+      <div id="cardContainer"></div>
 
-let total = 0;
-let answeredCards = 0;
-const cardsDiv = document.getElementById("cards");
+      <button class="btn" onclick="handleYes()">YES</button>
+      <button class="btn" onclick="handleNo()">NO</button>
+    </div>
 
-// Sound references
-const flipSound = document.getElementById("flipSound");
-const clickSound = document.getElementById("clickSound");
-const resultSound = document.getElementById("resultSound");
+    <!-- Result Screen -->
+    <div id="resultBox"></div>
+    <button id="restartBtn" class="btn" style="display:none;" onclick="restart()">Restart</button>
 
-// Generate binary sets
-function generateNumbers(bit) {
-    let arr = [];
-    for (let i = 1; i <= 100; i++) {
-        if (i & bit) arr.push(i);
+  </div>
+
+  <script>
+    const cards = {
+      1: [...Array(100).keys()].filter(n => (n + 1) & 1).map(n => n + 1),
+      2: [...Array(100).keys()].filter(n => (n + 1) & 2).map(n => n + 1),
+      4: [...Array(100).keys()].filter(n => (n + 1) & 4).map(n => n + 1),
+      8: [...Array(100).keys()].filter(n => (n + 1) & 8).map(n => n + 1),
+      16: [...Array(100).keys()].filter(n => (n + 1) & 16).map(n => n + 1),
+      32: [...Array(100).keys()].filter(n => (n + 1) & 32).map(n => n + 1),
+    };
+
+    const cardKeys = Object.keys(cards).map(Number);
+    let currentIndex = 0;
+    let magicNumber = 0;
+
+    function startGame() {
+      document.getElementById("welcomeScreen").style.display = "none";
+      document.getElementById("gameBox").style.display = "block";
+      showCard();
     }
-    return arr;
-}
 
-// Build UI
-cardsData.forEach((card, index) => {
-    cardsDiv.innerHTML += `
-        <div class="col-6 col-md-4 mt-3">
-            <div class="card-box" id="card-${index}">
-                <div class="card-inner">
-                    <div class="card-face front">
-                        <h4>Card ${index+1}</h4>
-                        <p>${card.numbers.join(", ")}</p>
-                        <button class="btn btn-success btn-sm" onclick="answer(${index}, 'yes')">Yes</button>
-                        <button class="btn btn-danger btn-sm" onclick="answer(${index}, 'no')">No</button>
-                    </div>
-                    <div class="card-face back">
-                        <h4>Answered ✔</h4>
-                    </div>
-                </div>
-            </div>
+    function showCard() {
+      if (currentIndex >= cardKeys.length) return finishGame();
+
+      const key = cardKeys[currentIndex];
+      const list = cards[key];
+
+      document.getElementById("progress").innerText = `Card ${currentIndex + 1} / 6`;
+
+      const cardHTML = `
+        <div class="card-box show">
+          <b>Is your number in this card?</b>
+          <p class="numbers">${list.join(", ")}</p>
         </div>
-    `;
-});
+      `;
 
-// Game logic
-function answer(id, ans) {
-    const card = cardsData[id];
-    const box = document.getElementById(`card-${id}`);
+      const cardContainer = document.getElementById("cardContainer");
+      cardContainer.innerHTML = cardHTML;
 
-    if (card.answered) return; // Prevent double clicks
-
-    card.answered = true;
-    clickSound.play();     // 🔊 Button click
-    flipSound.play();      // 🔊 Card flip
-    box.classList.add("flipped");
-
-    if (ans === "yes") total += card.value;
-
-    answeredCards++;
-
-    if (answeredCards === cardsData.length) {
-        resultSound.play(); // 🔊 final sound
-        showResult();
+      setTimeout(() => {
+        cardContainer.scrollIntoView({ behavior: "smooth" });
+      }, 200);
     }
-}
 
-function showResult() {
-    document.getElementById("result").innerHTML =
-        `<b>Your number is: <span class="text-primary">${total}</span></b>`;
-    document.getElementById("result").style.display = "block";
-}
-</script>
+    function handleYes() {
+      magicNumber += cardKeys[currentIndex];
+      currentIndex++;
+      showCard();
+    }
+
+    function handleNo() {
+      currentIndex++;
+      showCard();
+    }
+
+    function finishGame() {
+      document.getElementById("gameBox").style.display = "none";
+      const result = document.getElementById("resultBox");
+
+      result.innerHTML = `🎉 Your Magic Number is <b>${magicNumber}</b>`;
+      result.style.display = "block";
+
+      document.getElementById("restartBtn").style.display = "inline-block";
+    }
+
+    function restart() {
+      currentIndex = 0;
+      magicNumber = 0;
+
+      document.getElementById("resultBox").style.display = "none";
+      document.getElementById("restartBtn").style.display = "none";
+
+      document.getElementById("welcomeScreen").style.display = "block";
+    }
+  </script>
 
 </body>
 </html>
